@@ -14,25 +14,65 @@
     Date:   2023-May-28
 #>
 
-# Import the Hyper-V module
-Import-Module Hyper-V
+# Module manifest
+$ModuleVersion = '1.0.0'
+$GUID = 'put-your-guid-here'
 
-# Get all virtual machines
-$virtualMachines = Get-VM
+$ModuleManifest = @{
+    RootModule = 'VirtualWorkstationsModule.psm1'
+    ModuleVersion = $ModuleVersion
+    Guid = $GUID
+    FunctionsToExport = '*'
+    CmdletsToExport = '*'
+    AliasesToExport = '*'
+    VariablesToExport = '*'
+    ModuleToProcess = ''
+    Description = 'A PowerShell module to list virtual workstations on your Hyper-V host.'
+    Author = 'Lance Mohesky'
+    PrivateData = @{
+        PSData = @{
+            Tags = @('Hyper-V', 'Virtual Machines')
+            ProjectUri = 'https://github.com/lividwolfsix/windows-powershell'
+            LicenseUri = ''
+            ReleaseNotes = ''
+        }
+        Prerelease = $false
+    }
+}
 
-# Iterate through each virtual machine
-foreach ($vm in $virtualMachines) {
-    # Get the IP addresses of the virtual machine
-    $ipAddresses = Get-VMNetworkAdapter -VMName $vm.Name | Select-Object -ExpandProperty IPAddresses
+$ModuleManifestPath = Join-Path -Path $PSScriptRoot -ChildPath ($ModuleName + '.psd1')
+$ModuleManifest | Out-String | Set-Content -Path $ModuleManifestPath -Encoding UTF8
 
-    # If the virtual machine has IP addresses, display its details
-    if ($ipAddresses) {
-        # Get the OS information of the virtual machine
-        $os = (Get-WmiObject -Namespace "root\virtualization\v2" -Query "SELECT * FROM Msvm_ComputerSystem WHERE ElementName='$($vm.Name)'").Caption
 
-        Write-Host "Virtual Machine Name: $($vm.Name)"
-        Write-Host "IP Address(es): $($ipAddresses -join ', ')"
-        Write-Host "OS Information: $os"
-        Write-Host "------------------------------------"
+# Script functions
+function Get-VirtualWorkstations {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [string]$HyperVHost = 'localhost'
+    )
+
+    # Import the Hyper-V module
+    Import-Module Hyper-V
+
+    # Get all virtual machines
+    $virtualMachines = Get-VM
+
+    # Iterate through each virtual machine
+    foreach ($vm in $virtualMachines) {
+        # Get the IP addresses of the virtual machine
+        $ipAddresses = Get-VMNetworkAdapter -VMName $vm.Name | Select-Object -ExpandProperty IPAddresses
+
+        # If the virtual machine has IP addresses, display its details
+        if ($ipAddresses) {
+            # Get the OS information of the virtual machine
+            $os = (Get-WmiObject -Namespace "root\virtualization\v2" -Query "SELECT * FROM Msvm_ComputerSystem WHERE ElementName='$($vm.Name)'").Caption
+
+            [PSCustomObject]@{
+                'Virtual Machine Name' = $vm.Name
+                'IP Address(es)' = $ipAddresses -join ', '
+                'OS Information' = $os
+            }
+        }
     }
 }
