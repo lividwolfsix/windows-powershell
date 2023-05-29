@@ -1,6 +1,8 @@
 # windows-powershell
 PowerShell scripts I'm currently working on or use frequently.
 
+![PowerShell Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/PowerShell_5.0_icon.png/120px-PowerShell_5.0_icon.png)
+
 # PowerShell Repository
 
 This repository contains a collection of PowerShell scripts and system administrator tools. It is aimed at automating tasks or assisting system administrators in their daily operations. 
